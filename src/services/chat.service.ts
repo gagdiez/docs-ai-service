@@ -1,6 +1,5 @@
 import { env } from '../config/env';
 import { ChatApiResponse, ChatServiceConfig, FetchDataResponse, ThreadApiResponse } from '../interfaces/chat.interface';
-
 export class ChatService {
   private config: ChatServiceConfig;
   
@@ -113,7 +112,11 @@ export class ChatService {
 
   public checkIfHasMessages(threadResponse: ThreadApiResponse[]): boolean {
     return threadResponse.length > 0 && 
-           threadResponse[0]?.result?.data?.json?.messages?.length > 0;
+           threadResponse[0]?.result?.data?.json?.messages?.length > 0 &&
+           threadResponse[0].result.data.json.messages.some((message: any) =>
+             message.attachments == null && 
+             message.metadata == null
+           );
   }
 
   public async chatWithAI(userMessage: string, threadId?: string): Promise<ThreadApiResponse[]> {
@@ -136,11 +139,13 @@ export class ChatService {
         messageId: message.id, 
         runId: run.id 
       });
+      const timeInit = Date.now();
       await new Promise(resolve => setTimeout(resolve, 2500));
       for (let attempt = 1; attempt < 50; attempt++) {
         console.log(`Attempt ${attempt} to get messages`);
         
         if (this.checkIfHasMessages(threadResponse)) {
+          console.log("time: ",Date.now() - timeInit);
           console.log("Messages received");
           break;
         }
@@ -162,7 +167,12 @@ export class ChatService {
 
   public extractMessageContent(response: ThreadApiResponse[]): ChatApiResponse | undefined {
     if (this.checkIfHasMessages(response)) {
-      return response[0].result.data.json.messages[0]?.content[0]?.text;
+      const msj = response[0].result.data.json.messages.find((message: any) =>
+        message.attachments == null &&
+        message.metadata == null
+      );
+      return msj.content[0]?.text;
+
     }
     return undefined;
   }
