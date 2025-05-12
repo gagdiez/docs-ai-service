@@ -5,15 +5,15 @@ import { ChatService } from '../services/chat.service';
 import { env } from '../config/env';
 
 const COOKIE = {
-    "account_id": env.ACCOUNT_ID,
-    "public_key": env.PUBLIC_KEY,
-    "signature": env.SIGNATURE,
-    "callback_url": env.CALLBACK_URL,
-    "message": env.MESSAGE,
-    "recipient": env.RECIPIENT,
-    "nonce": env.NONCE
+  "account_id": env.ACCOUNT_ID,
+  "public_key": env.PUBLIC_KEY,
+  "signature": env.SIGNATURE,
+  "callback_url": env.CALLBACK_URL,
+  "message": env.MESSAGE,
+  "recipient": env.RECIPIENT,
+  "nonce": env.NONCE
 };
-  
+
 
 export class ChatController {
   async chatWithNearAI(req: Request, res: Response): Promise<void> {
@@ -25,16 +25,14 @@ export class ChatController {
         return;
       }
 
-    console.log({chatRequest});
-    
-    const chatService = new ChatService({ cookie: COOKIE });
-    const result = await chatService.chatWithAI(chatRequest.messages,chatRequest.threadId);
-    const messageContent = chatService.extractMessageContent(result);
-    const threadId = chatService.getThreadId(result);
-    res.json({message:messageContent?.value,threadId});
+      const chatService = new ChatService({ cookie: COOKIE });
+      const result = await chatService.chatWithAI(chatRequest.messages, chatRequest.threadId);
+      const messageContent = chatService.extractMessageContent(result);
+      const threadId = chatService.getThreadId(result);
+      res.json({ message: messageContent?.value, threadId });
     } catch (error) {
       console.error('Error in chatWithNearAI:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: 'Error processing chat request',
         message: error instanceof Error ? error.message : 'Unknown error'
       });
